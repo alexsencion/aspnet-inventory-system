@@ -1,0 +1,68 @@
+﻿@model InventoryManagementSystem.Web.Models.SupplierViewModel
+
+@{
+	ViewData["Title"] = "Supplier Details";
+}
+
+<div class="container mt-4">
+	<div class="row">
+		<div class="col-md-8 offset-md-2">
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h2>Supplier Details</h2>
+				<div>
+					<a asp-action="Edit" asp-route-id="@Model.SupplierId" class="btn btn-warning">
+						<i class="bi bi-pencil"> Edit </i>
+					</a>
+					<a asp-action="Index" class="btn btn-secondary">
+						<i class="bg-info bi-arrow-left"></i> Back to List
+					</a>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="card-body">
+					<dl class="row">
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Name)</dt>
+						<dd class="col-sm-8">@Model.Name</dd>
+
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.ContactPerson)</dt>
+						<dd class="col-sm-8">@Model.ContactPerson</dd>
+
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Email)</dt>
+						<dd class="col-sm-8">@Model.Email</dd>
+
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Phone)</dt>
+						<dd class="col-sm-8">@Model.Phone</dd>
+
+						@if(!string.IsNullOrWhiteSpace(Model.Address))
+						{
+							<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Address)</dt>
+							<dd class="col-sm-8">@Model.Address</dd>
+						}
+
+						@if(!string.IsNullOrWhiteSpace(Model.Notes))
+						{
+							<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Notes)</dt>
+							<dd class="col-sm-8">@Model.Notes</dd>
+						}
+
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.ProductCount)</dt>
+						<dd class="col-sm-8">@Model.ProductCount</dd>
+
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+						<dd class="col-sm-8">@Model.CreatedDate.ToString("g")</dd>
+
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.ProductCount)</dt>
+						<dd class="col-sm-8">@Model.ModifiedDate.ToString("g")</dd>
+					</dl>
+				</div>
+			</div>
+
+			<div class="mt-3">
+				<a asp-action="Delete" asp-route-id="@Model.SupplierId" class="btn btn-danger">
+					<i class="bg-info bi-trash"></i> Delete Supplier
+				</a>
+			</div>
+		</div>
+	</div>
+</div>
