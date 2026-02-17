@@ -1,0 +1,67 @@
+﻿@model InventoryManagementSystem.Web.Models.SupplierViewModel
+
+@{
+	ViewData["Title"] = "Create Supplier";
+}
+
+<div class="container mt-4">
+	<div class="row">
+		<div class="col-md-8 offset-md-2">
+			<h2>Create New Supplier</h2>
+			<hr />
+
+			<form asp-action="Create" method="post">
+				<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+				<div class="mb-3">
+					<label asp-for="Name" class="form-label"></label>
+					<input asp-for="Name" class="form-control"/>
+					<span asp-validation-for="Name" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label asp-for="ContactPerson" class="form-label"></label>
+					<input asp-for="ContactPerson" class="form-control" />
+					<span asp-validation-for="ContactPerson" class="text-danger"></span>
+				</div>
+
+				<div class="row">
+					<div class="col-md-6 mb-3">
+						<label asp-for="Email" class="form-label"></label>
+						<input asp-for="Email" class="form-control" type="email" />
+						<span asp-validation-for="Email" class="text-danger"></span>
+					</div>
+				</div>
+
+				<div class="col-md-6 mb-3">
+					<label asp-for="Phone" class="form-label"></label>
+					<input asp-for="Phone" class="form-control" type="tel" />
+					<span asp-validation-for="Phone" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label asp-for="Address" class="form-label"></label>
+					<textarea asp-for="Address" class="form-control" rows="2"></textarea>
+					<span asp-validation-for="Address" class="text-danger"></span>
+				</div>
+
+				<div class="mb-3">
+					<label asp-for="Notes" class="form-label"></label>
+					<textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+					<span asp-validation-for="Notes" class="text-danger"></span>
+				</div>
+
+				<div class="d-flex justify-content-between">
+					<a asp-action="Index" class="btn btn btn-secondary">Cancel</a>
+					<button type="submit" class="btn btn-primary">Create</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}
