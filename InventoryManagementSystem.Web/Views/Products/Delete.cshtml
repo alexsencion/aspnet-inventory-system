@@ -1,14 +1,13 @@
-﻿@model InventoryManagementSystem.Web.Models.SupplierViewModel
+﻿@model InventoryManagementSystem.Web.Models.ProductViewModel
 
 @{
-	ViewData["Title"] = "Delete Supplier";
-
+	ViewData["Title"] = "Delete Product";
 }
 
 <div class="container mt-4">
 	<div class="row">
 		<div class="col-md-8 offset-md-2">
-			<h2 class="text-danger">Delete Supplier</h2>
+			<h2 class="text-danger">Delete Product</h2>
 			<hr />
 
 			@if(!ViewBag.CanDelete)
@@ -22,7 +21,7 @@
 			{
 				<div class="alert alert-danger">
 					<i class="bi bi-exclamation-triangle"></i>
-					Are you sure you want to delete this supplier? This action cannot be undone.
+					Are you sure you want to delete this product? This action cannot be undone.
 				</div>
 			}
 
@@ -32,17 +31,20 @@
 						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Name)</dt>
 						<dd class="col-sm-8">@Model.Name</dd>
 
-						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.ContactPerson)</dt>
-						<dd class="col-sm-8">@Model.ContactPerson</dd>
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.SKU)</dt>
+						<dd class="col-sm-8">@Model.SKU</dd>
 
-						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Email)</dt>
-						<dd class="col-sm-8">@Model.Email</dd>
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Category)</dt>
+						<dd class="col-sm-8">@Model.Category</dd>
 
-						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Phone)</dt>
-						<dd class="col-sm-8">@Model.Phone</dd>
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.CurrentStock)</dt>
+						<dd class="col-sm-8">@Model.CurrentStock units</dd>
 
-						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.ProductCount)</dt>
-						<dd class="col-sm-8"><span class="badge bg-info">@Model.ProductCount products(s)</span></dd>
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.InventoryValue)</dt>
+						<dd class="col-sm-8">@Model.InventoryValue.ToString("C")</dd>
+
+						<dt class="col-sm-4">@Html.DisplayNameFor(model => model.SupplierName)</dt>
+						<dd class="col-sm-8">@(Model.SupplierName ?? "No supplier") </dd>
 					</dl>
 				</div>
 			</div>

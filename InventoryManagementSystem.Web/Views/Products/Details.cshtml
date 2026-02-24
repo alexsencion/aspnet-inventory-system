@@ -1,0 +1,123 @@
+﻿@model InventoryManagementSystem.Web.Models.ProductViewModel
+
+@{
+	ViewData["Title"] = "Product Details";
+}
+
+<div class="container mt-4">
+	<div class="row">
+		<div class="col-md-10 offset-md-1">
+			<div class="d-flex justify-content-between align-content-center mb-4">
+				<h2>Product Details</h2>
+				<div>
+					<a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-warning">
+						<i class="bi bi-pencil"></i> Edit
+					</a>
+					<a asp-action="Index" class="btn btn-secondary">
+						<i class="bi bi-arrow-left"></i> Back to List
+					</a>
+				</div>
+			</div>
+
+			@if (Model.IsLowStock)
+			{
+				<div class="alert alert-warning">
+					<i class="bi bi-exclamation-triangle"></i>
+					<strong>Low Stock Alert: <strong> Current Stock (@Model.CurrentStock) i at below the thresold (@Model.LowStockThreshold)</strong></strong>
+				</div>
+			}
+
+			<div class="row">
+				<div class="col-md-8">
+					<div class="card mb-3">
+						<div class="card-header">
+							<h5 class="mb-0">Product Information</h5>
+						</div>
+						<div class="card-body">
+							<dl class="row">
+								<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Name)</dt>
+								<dd class="col-sm-8">@Model.Name</dd>
+
+								<dt class="col-sm-4">@Html.DisplayNameFor(model => model.SKU)</dt>
+								<dd class="col-sm-8">@Model.SKU</dd>
+
+								@if (!string.IsNullOrWhiteSpace(Model.Description))
+								{
+									<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Description)</dt>
+									<dd class="col-sm-8">@Model.Description</dd>
+								}
+
+								<dt class="col-sm-4">@Html.DisplayNameFor(model => model.Category)</dt>
+								<dd class="col-sm-8">
+									<span class="col-sm-8">@Model.Category</span>
+								</dd>
+
+								<dt class="col-sm-4">@Html.DisplayNameFor(model => model.SupplierName)</dt>
+								<dd class="col-sm-8">
+									@if (!string.IsNullOrWhiteSpace(Model.SupplierName))
+									{
+										<a asp-asp-controller="Suppliers" asp-action="Details" asp-route-id="@Model.SupplierId">
+											@Model.SupplierName
+										</a>
+									}
+									else
+									{
+										<span class="text-muted">No supplier assigned</span>
+									}
+								</dd>
+							</dl>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-4">
+					<div class="card mb-3">
+						<div class="card-header">
+							<h5 class="mb-0">Pricing & Stock</h5>
+						</div>
+						<div class="card-body">
+							<dl class="mb-2">
+								<dt>@Html.DisplayNameFor(model => model.UnitPrice)</dt>
+								<dd class="h4 text-primary">@Model.UnitPrice.ToString("C")</dd>
+
+								<dt>@Html.DisplayNameFor(model => model.CurrentStock)</dt>
+								<dd>
+									<span class="h3 @(Model.IsLowStock ? "text-warning" : "text-success")">
+										@Model.CurrentStock
+									</span>
+								</dd>
+
+								<dt>@Html.DisplayNameFor(model => model.LowStockThreshold)</dt>
+								<dd>@Model.LowStockThreshold units</dd>
+
+								<dt>@Html.DisplayNameFor(model => model.InventoryValue)</dt>
+								<dd class="h5 text-success">@Model.LowStockThreshold units</dd>
+							</dl>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="card-header">
+					<h5 class="mb-0">Metadata</h5>
+				</div>
+				<div class="card-body">
+					<dl class="row mb-0">
+						<dt class="col-sm-3">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+						<dd class="col-sm-9">@Model.CreatedDate.ToString("f")</dd>
+
+						<dt class="col-sm-3">@Html.DisplayNameFor(model => model.ModifiedDate)</dt>
+						<dd class="col-sm-9">@Model.ModifiedDate.ToString("f")</dd>
+					</dl>
+				</div>
+			</div>
+
+			<div class="mt-3">
+				<a asp-action="Delete" asp-route-id="@Model.ProductId" class="btn btn-danger">
+					<i class="bi bi-trash"></i> Delete Product
+				</a>
+			</div>
+		</div>
+	</div>
+</div>
