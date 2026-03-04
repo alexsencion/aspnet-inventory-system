@@ -1,0 +1,104 @@
+﻿@model InventoryManagementSystem.Web.Models.StockMovementViewModel
+
+@{
+    ViewData["Title"] = "Movement Details";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Stock Movement Details</h2>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        @if (Model.MovementType == InventoryManagementSystem.Data.Entities.MovementType.IN)
+                        {
+                            <span class="badge bg-success me-2">
+                                <i class="bi bi-arrow-down-circle"></i> Stock IN
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger me-2">
+                                <i class="bi bi-arrow-up-circle"></i> Stock OUT
+                            </span>
+                        }
+                        Movement #@Model.MovementId
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.MovementDate)</dt>
+                        <dd class="col-sm-8">@Model.MovementDate.ToString("f")</dd>
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ProductName)</dt>
+                        <dd class="col-sm-8">
+                            <a asp-controller="Products" asp-action="Details" asp-route-id="@Model.ProductId">
+                                @Model.ProductName
+                            </a>
+                        </dd>
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ProductSKU)</dt>
+                        <dd class="col-sm-8"><code>@Model.ProductSKU</code></dd>
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Quantity)</dt>
+                        <dd class="col-sm-8">
+                            <strong class="h4">
+                                @if (Model.MovementType == InventoryManagementSystem.Data.Entities.MovementType.IN)
+                                {
+                                    <span class="text-success">+@Model.Quantity</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger">-@Model.Quantity</span>
+                                }
+                            </strong>
+                            units
+                        </dd>
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.StockAfterMovement)</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-info fs-5">@Model.StockAfterMovement</span> units
+                        </dd>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Reference))
+                        {
+                            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Reference)</dt>
+                            <dd class="col-sm-8">@Model.Reference</dd>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Reason))
+                        {
+                            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Reason)</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-secondary">@Model.Reason</span>
+                            </dd>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                        {
+                            <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Notes)</dt>
+                            <dd class="col-sm-8">@Model.Notes</dd>
+                        }
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+                        <dd class="col-sm-8">
+                            <small class="text-muted">@Model.CreatedDate.ToString("f")</small>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                <strong>Note:</strong> Stock movements cannot be edited or deleted to maintain audit trail integrity.
+            </div>
+        </div>
+    </div>
+</div>

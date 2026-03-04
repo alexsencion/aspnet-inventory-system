@@ -1,0 +1,131 @@
+﻿@model InventoryManagementSystem.Web.Models.CreateStockInViewModel
+
+@{
+	ViewData["Title"] = "Stock IN";
+}
+
+<div class="container mt-4">
+	<div class="row">
+		<div class="col-md-8 offset-md-2">
+			<div class="d-flex align-items-center mb-4">
+				<div class="me-3">
+					<span class="badge bg-success" style="font-size: 1.5rem; padding: 0.75rem">
+						<i class="bi bi-arrow-down-circle"></i>
+					</span>
+				</div>
+				<div>
+					<h2 class="mb-0">Record Stock IN</h2>
+					<small class="text-muted">Add inventory to existing products</small>
+				</div>
+			</div>
+
+			<form asp-action="CreateIn" method="post" id="stockInForm">
+				<div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+				<div class="card mb-3">
+					<div class="card-header">
+						<h5 class="mb-0">Product Information</h5>
+					</div>
+
+					<div class="card-body">
+						<div class="mb-3">
+							<label asp-for="ProductId" class="form-label"></label>
+							<select asp-for="ProductId" class="form-select" asp-items="@Model.Products" id="productSelect"></select>
+							<span asp-validation-for="ProductId" class="text-danger"></span>
+						</div>
+
+						<div id="productInfo" class="alert alert-info" style="display: none">
+							<strong>Selected Product:</strong>
+							<div id="productDetails" class="mt-2"></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="card mb-3">
+					<div class="card-header">
+						<h5 class="mb-0">Movement Details</h5>
+					</div>
+
+					<div class="card-body">
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label asp-for="Quantity" class="form-label"></label>
+								<input asp-for="Quantity" class="form-control" type="number" min="1"
+									   placeholder="Enter quantity to add" />
+								<span asp-validation-for="MovementDate" class="text-danger"></span>
+							</div>
+
+							<div class="col-md-6 mb-3">
+								<label asp-for="MovementDate" class="form-label"></label>
+								<input asp-for="MovementDate" class="form-control" type="datetime-local" />
+								<span asp-validation-for="MovementDate" class="text-danger"></span>
+							</div>
+						</div>
+
+						<div class="mb-3">
+							<label asp-for="Notes" class="form-label"></label>
+							<textarea asp-for="Notes" class="form-control" rows="3"
+									  placeholder="Additional notes or comments"></textarea>
+							<span asp-validation-for="Notes" class="text-danger"></span>
+						</div>
+					</div>
+				</div>
+
+				<div class="d-flex justify-content-between">
+					<a asp-action="Index" class="btn btn-secondary">
+						<i class="bi bi-x-circle"></i> Cancel
+					</a>
+					<button type="submit" class="btn btn-success btn-lg">
+						<i class="bi bi-check-circle"></i> Record Stock IN
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+	<script>
+		$(document).ready(function() {
+			$('#productSelect').change(function() {
+				var productId = $(this).val();
+
+				if (productId) {
+					$.ajax({
+						url: '@Url.Action("GetProductStock", "StockMovements")',
+						type: 'GET',
+						data: { productId: productId },
+						success: function(data) {
+							var html = '<div class="row">';
+							html += '<div class="col-md-6"><strong>Name:</strong> ' + data.productName + '</div>';
+							html += '<div class="col-md-6"><strong>SKU:</strong> ' + data.sku + '</div>';
+							html += '<div class="col-md-6 mt-2"><strong>Current Stock:</strong> <span class="badge bg-primary">' + data.currentStock + '+</span></div>';
+							html += '<div class="col-md-6 mt-2"><strong>Low Stock Thresold:</strong> ' + data.lowStockThreshold + '</div>';
+
+							if (data.isLowStock) {
+								html += '<div class="col-12 mt-2"><span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Currently Low Stock </span></div>';
+							}
+
+							html += '</div>';
+
+							$('#productDetails').html(html);
+							$('#productInfo').slideDown();
+						},
+						error: function() {
+							$('#productInfo').slideUp();
+						}
+					});
+				} else {
+					$('#productInfo').slideUp();
+				}
+			});
+
+			// Format datetime-local input to current time
+			var now = new Date();
+			now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+			document.getElementById('MovementDate').value = now.toISOString().slice(0, 16);
+		});
+	</script>
+}
