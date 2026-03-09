@@ -1,0 +1,209 @@
+﻿@model InventoryManagementSystem.Web.Models.LowStockReportViewModel
+
+@{
+    ViewData["Title"] = "Low Stock Alert Report";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-exclamation-triangle text-warning"></i> Low Stock Alert Report
+            </h2>
+            <p class="text-muted mb-0">Products at or below low stock threshold as of @DateTime.Now.ToString("MMMM dd, yyyy HH:mm")</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+            <a asp-action="ExportLowStock" class="btn btn-warning">
+                <i class="bi bi-download"></i> Export to CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Total Low Stock Items</h6>
+                    <h2 class="text-warning mb-0">@Model.TotalLowStockItems</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Value at Risk</h6>
+                    <h2 class="text-danger mb-0">@Model.ValueAtRisk.ToString("C")</h2>
+                    <small class="text-muted">Inventory value of low stock items</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.TotalLowStockItems == 0)
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i>
+            <strong>Excellent!</strong> All products are adequately stocked. No items are currently below their low stock thresholds.
+        </div>
+        <div class="text-center my-5">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+            <h3 class="mt-3">All Stock Levels Normal</h3>
+            <p class="text-muted">Continue monitoring your inventory to maintain optimal stock levels.</p>
+            <a asp-action="StockLevelsReport" class="btn btn-primary mt-3">
+                View Complete Stock Report
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Action Required:</strong> The following @Model.TotalLowStockItems product(s) need restocking.
+        </div>
+
+        <!-- Low Stock Products Table -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Products Requiring Attention</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Priority</th>
+                                <th>Product Name</th>
+                                <th>SKU</th>
+                                <th>Category</th>
+                                <th>Supplier</th>
+                                <th class="text-center">Current Stock</th>
+                                <th class="text-center">Threshold</th>
+                                <th class="text-center">Shortfall</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end">Restock Value</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var priority = 1;
+                            }
+                            @foreach (var product in Model.LowStockProducts)
+                            {
+                                var shortfall = product.LowStockThreshold - product.CurrentStock;
+                                var restockValue = shortfall * product.UnitPrice;
+                                var criticalLevel = product.CurrentStock == 0 ? "table-danger" :
+                                product.CurrentStock <= (product.LowStockThreshold / 2) ? "table-warning" : "";
+
+                                <tr class="@criticalLevel">
+                                    <td>
+                                        @if (product.CurrentStock == 0)
+                                        {
+                                            <span class="badge bg-danger">@priority</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">@priority</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">
+                                            @product.Name
+                                        </a>
+                                        @if (product.CurrentStock == 0)
+                                        {
+                                            <br>
+                                
+                                            <span class="badge bg-danger">OUT OF STOCK</span>
+                                        }
+                                    </td>
+                                    <td><code>@product.SKU</code></td>
+                                    <td>@product.Category</td>
+                                    <td>
+                                        @if (product.SupplierId.HasValue)
+                                        {
+                                            <a asp-controller="Suppliers" asp-action="Details" asp-route-id="@product.SupplierId">
+                                                @product.SupplierName
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No supplier</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge @(product.CurrentStock == 0 ? "bg-danger" : "bg-warning text-dark")">
+                                            @product.CurrentStock
+                                        </span>
+                                    </td>
+                                    <td class="text-center">@product.LowStockThreshold</td>
+                                    <td class="text-center">
+                                        <strong class="text-danger">@shortfall</strong>
+                                    </td>
+                                    <td class="text-end">@product.UnitPrice.ToString("C")</td>
+                                    <td class="text-end">
+                                        <strong>@restockValue.ToString("C")</strong>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="StockMovements" asp-action="CreateIn"
+                                           class="btn btn-sm btn-success" title="Add Stock">
+                                            <i class="bi bi-plus-circle"></i> Restock
+                                        </a>
+                                    </td>
+                                </tr>
+                                priority++;
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light fw-bold">
+                                <td colspan="9" class="text-end">TOTAL RESTOCK VALUE:</td>
+                                <td class="text-end">
+                                    @{
+                                        var totalRestockValue = Model.LowStockProducts.Sum(p =>
+                                        (p.LowStockThreshold - p.CurrentStock) * p.UnitPrice);
+                                    }
+                                    @totalRestockValue.ToString("C")
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Recommendations</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>
+                        <strong>Immediate Action:</strong> Products with 0 stock should be restocked urgently to avoid lost sales.
+                    </li>
+                    <li>
+                        <strong>Review Thresholds:</strong> Consider adjusting low stock thresholds based on sales velocity and lead times.
+                    </li>
+                    <li>
+                        <strong>Supplier Communication:</strong> Contact suppliers for products with multiple low stock occurrences.
+                    </li>
+                    <li>
+                        <strong>Budget Planning:</strong> Estimated restock value: <strong>@totalRestockValue.ToString("C")</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    }
+
+    <div class="mt-3">
+        <p class="text-muted">
+            <i class="bi bi-info-circle"></i>
+            Report generated on @DateTime.Now.ToString("f")
+        </p>
+    </div>
+</div>

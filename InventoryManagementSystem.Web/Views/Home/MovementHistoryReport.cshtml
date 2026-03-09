@@ -1,0 +1,226 @@
+﻿@model InventoryManagementSystem.Web.Models.MovementHistoryReportViewModel
+
+@{
+    ViewData["Title"] = "Movement History Report";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-clock-history"></i> Stock Movement History Report</h2>
+            <p class="text-muted mb-0">
+                @if (Model.StartDate.HasValue && Model.EndDate.HasValue)
+                {
+                    <text>@Model.StartDate.Value.ToString("MMMM dd, yyyy") - @Model.EndDate.Value.ToString("MMMM dd, yyyy")</text>
+                }
+            </p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+            <a asp-action="ExportMovementHistory" 
+               asp-route-startDate="@Model.StartDate" 
+               asp-route-endDate="@Model.EndDate" 
+               class="btn btn-primary">
+                <i class="bi bi-download"></i> Export to CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filter by Date Range</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="MovementHistoryReport" method="get">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="startDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="startDate" name="startDate" 
+                               value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="endDate" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="endDate" name="endDate" 
+                               value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Apply Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Quick filters: 
+                        <a href="?startDate=@DateTime.Today.AddDays(-7).ToString("yyyy-MM-dd")&endDate=@DateTime.Today.ToString("yyyy-MM-dd")">
+                            Last 7 days
+                        </a> | 
+                        <a href="?startDate=@DateTime.Today.AddDays(-30).ToString("yyyy-MM-dd")&endDate=@DateTime.Today.ToString("yyyy-MM-dd")">
+                            Last 30 days
+                        </a> | 
+                        <a href="?startDate=@DateTime.Today.AddDays(-90).ToString("yyyy-MM-dd")&endDate=@DateTime.Today.ToString("yyyy-MM-dd")">
+                            Last 90 days
+                        </a> |
+                        <a href="?startDate=@(new DateTime(DateTime.Today.Year, 1, 1).ToString("yyyy-MM-dd"))&endDate=@DateTime.Today.ToString("yyyy-MM-dd")">
+                            Year to Date
+                        </a>
+                    </small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Total Movements</h6>
+                    <h2 class="text-primary mb-0">@Model.Movements.Count()</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Stock IN</h6>
+                    <h2 class="text-success mb-0">+@Model.TotalStockIn</h2>
+                    <small class="text-muted">units added</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Stock OUT</h6>
+                    <h2 class="text-danger mb-0">-@Model.TotalStockOut</h2>
+                    <small class="text-muted">units removed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Net Change</h6>
+                    <h2 class="@(Model.NetChange >= 0 ? "text-success" : "text-danger") mb-0">
+                        @(Model.NetChange >= 0 ? "+" : "")@Model.NetChange
+                    </h2>
+                    <small class="text-muted">total units</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movements Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">All Movements</h5>
+        </div>
+        <div class="card-body">
+            @if (!Model.Movements.Any())
+            {
+                <p class="text-muted mb-0">No stock movements found for the selected date range.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Type</th>
+                                <th>Product</th>
+                                <th>SKU</th>
+                                <th class="text-center">Quantity</th>
+                                <th>Reference/Reason</th>
+                                <th class="text-center">Stock After</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var movement in Model.Movements)
+                            {
+                                <tr>
+                                    <td>
+                                        <small>@movement.MovementDate.ToString("MMM dd, yyyy")</small>
+                                        <br>
+                                        <small class="text-muted">@movement.MovementDate.ToString("HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        @if (movement.MovementType == InventoryManagementSystem.Data.Entities.MovementType.IN)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-arrow-down-circle"></i> IN
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-arrow-up-circle"></i> OUT
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Products" asp-action="Details" 
+                                           asp-route-id="@movement.ProductId">
+                                            @movement.ProductName
+                                        </a>
+                                    </td>
+                                    <td><code>@movement.ProductSKU</code></td>
+                                    <td class="text-center">
+                                        <strong>
+                                            @if (movement.MovementType == InventoryManagementSystem.Data.Entities.MovementType.IN)
+                                            {
+                                                <span class="text-success">+@movement.Quantity</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-danger">-@movement.Quantity</span>
+                                            }
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(movement.Reference))
+                                        {
+                                            <small class="text-muted">@movement.Reference</small>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(movement.Reason))
+                                        {
+                                            <span class="badge bg-secondary">@movement.Reason</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info">@movement.StockAfterMovement</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(movement.Notes))
+                                        {
+                                            <small class="text-muted">@movement.Notes</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">-</small>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <p class="text-muted">
+            <i class="bi bi-info-circle"></i> 
+            Report generated on @DateTime.Now.ToString("f")
+        </p>
+    </div>
+</div>

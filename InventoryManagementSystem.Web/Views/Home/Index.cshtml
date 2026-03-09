@@ -1,8 +1,334 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model InventoryManagementSystem.Web.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+        <div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="bi bi-file-earmark-text"></i> Reports
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" asp-action="StockLevelsReport">Current Stock Levels</a></li>
+                    <li><a class="dropdown-item" asp-action="LowStockReport">Low Stock Alert</a></li>
+                    <li><a class="dropdown-item" asp-action="MovementHistoryReport">Movement History</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Products</h6>
+                            <h2 class="mb-0">@Model.TotalProducts</h2>
+                        </div>
+                        <div class="text-primary" style="font-size: 2.5rem;">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        <a asp-controller="Products" asp-action="Index">View all products</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Low Stock Items</h6>
+                            <h2 class="mb-0">@Model.LowStockProducts</h2>
+                        </div>
+                        <div class="text-warning" style="font-size: 2.5rem;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        <a asp-action="LowStockReport">View low stock report</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Suppliers</h6>
+                            <h2 class="mb-0">@Model.TotalSuppliers</h2>
+                        </div>
+                        <div class="text-info" style="font-size: 2.5rem;">
+                            <i class="bi bi-building"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        <a asp-controller="Suppliers" asp-action="Index">View all suppliers</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Inventory Value</h6>
+                            <h2 class="mb-0">@Model.TotalInventoryValue.ToString("C0")</h2>
+                        </div>
+                        <div class="text-success" style="font-size: 2.5rem;">
+                            <i class="bi bi-currency-dollar"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        <a asp-action="StockLevelsReport">View stock levels</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Activity -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-calendar-day"></i> Today's Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <h3 class="text-success">
+                                <i class="bi bi-arrow-down-circle"></i> @Model.TodayStockIn
+                            </h3>
+                            <p class="text-muted mb-0">Stock IN movements</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-danger">
+                                <i class="bi bi-arrow-up-circle"></i> @Model.TodayStockOut
+                            </h3>
+                            <p class="text-muted mb-0">Stock OUT movements</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-primary">
+                                <i class="bi bi-graph-up"></i> @Model.ThisWeekMovements
+                            </h3>
+                            <p class="text-muted mb-0">This week's total movements</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Low Stock Alerts -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle text-warning"></i> Low Stock Alerts
+                    </h5>
+                    <a asp-action="LowStockReport" class="btn btn-sm btn-outline-warning">View All</a>
+                </div>
+                <div class="card-body">
+                    @if (!Model.LowStockItems.Any())
+                    {
+                        <p class="text-muted mb-0">
+                            <i class="bi bi-check-circle text-success"></i> All products are adequately stocked
+                        </p>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var product in Model.LowStockItems)
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <a asp-controller="Products" asp-action="Details"
+                                                   asp-route-id="@product.ProductId">
+                                                    @product.Name
+                                                </a>
+                                            </h6>
+                                            <small class="text-muted">SKU: @product.SKU</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-warning text-dark">@product.CurrentStock</span>
+                                            <br>
+                                            <small class="text-muted">Threshold: @product.LowStockThreshold</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Movements -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Recent Movements
+                    </h5>
+                    <a asp-controller="StockMovements" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (!Model.RecentMovements.Any())
+                    {
+                        <p class="text-muted mb-0">No recent stock movements</p>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var movement in Model.RecentMovements)
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            @if (movement.MovementType == InventoryManagementSystem.Data.Entities.MovementType.IN)
+                                            {
+                                                <span class="badge bg-success me-2">
+                                                    <i class="bi bi-arrow-down-circle"></i> IN
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger me-2">
+                                                    <i class="bi bi-arrow-up-circle"></i> OUT
+                                                </span>
+                                            }
+                                            <strong>@movement.ProductName</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                @movement.MovementDate.ToString("MMM dd, HH:mm")
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <strong>
+                                                @if (movement.MovementType == InventoryManagementSystem.Data.Entities.MovementType.IN)
+                                                {
+                                                    <span class="text-success">+@movement.Quantity</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger">-@movement.Quantity</span>
+                                                }
+                                            </strong>
+                                            <br>
+                                            <small class="text-muted">Stock: @movement.StockAfterMovement</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    @if (Model.ProductsByCategory.Any())
+    {
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Inventory by Category</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th class="text-center">Products</th>
+                                        <th class="text-end">Total Value</th>
+                                        <th>Distribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var category in Model.ProductsByCategory.OrderByDescending(c => c.Value))
+                                    {
+                                        var percentage = (double)category.Value / Model.TotalProducts * 100;
+                                        var value = Model.ValueByCategory.ContainsKey(category.Key)
+                                        ? Model.ValueByCategory[category.Key]
+                                        : 0;
+
+                                        <tr>
+                                            <td>
+                                                <strong>@category.Key</strong>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-primary">@category.Value</span>
+                                            </td>
+                                            <td class="text-end">@value.ToString("C")</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar" role="progressbar"
+                                                         style="width: @percentage%"
+                                                         aria-valuenow="@percentage"
+                                                         aria-valuemin="0"
+                                                         aria-valuemax="100">
+                                                        @percentage.ToString("F1")%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="bi bi-lightning"></i> Quick Actions</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a asp-controller="Products" asp-action="Create" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Add Product
+                        </a>
+                        <a asp-controller="StockMovements" asp-action="CreateIn" class="btn btn-success">
+                            <i class="bi bi-arrow-down-circle"></i> Stock IN
+                        </a>
+                        <a asp-controller="StockMovements" asp-action="CreateOut" class="btn btn-danger">
+                            <i class="bi bi-arrow-up-circle"></i> Stock OUT
+                        </a>
+                        <a asp-controller="Suppliers" asp-action="Create" class="btn btn-info">
+                            <i class="bi bi-building"></i> Add Supplier
+                        </a>
+                        <a asp-action="ExportStockLevels" class="btn btn-outline-secondary">
+                            <i class="bi bi-download"></i> Export Stock Levels
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
