@@ -13,7 +13,7 @@ namespace InventoryManagementSystem.Web.Models
 
         [Required(ErrorMessage = "Contact person is required")]
         [StringLength(100, ErrorMessage = "Contact person cannot exceed 100 characters")]
-        [Display(Name = "Contact Name")]
+        [Display(Name = "Contact Person")]
         public string ContactPerson { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required")]

@@ -1,10 +1,13 @@
 ﻿using InventoryManagementSystem.Data;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -21,6 +24,8 @@ namespace InventoryManagementSystem.Tests.Integration
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.UseEnvironment("Testing");
+
             builder.ConfigureServices(services =>
             {
                 // Remove the existing DbContext registration
@@ -35,32 +40,49 @@ namespace InventoryManagementSystem.Tests.Integration
                 // Add DbContext using an in-memory database for testing
                 services.AddDbContext<ApplicationDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("TestDatabase");
+                    options.UseInMemoryDatabase("TestDatabase")
+                    .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning));
                 });
 
-                services.AddMvc(options =>
-                {
-                    options.Filters.Add(new IgnoreAntiforgeryTokenAttribute());
-                });
+                services.AddSingleton<Microsoft.AspNetCore.Antiforgery.IAntiforgery, AllowAllAntiforgery>();
 
-                // Build the service provider
                 var sp = services.BuildServiceProvider();
 
-                // Create a scope to obtain a reference to the database context
                 using (var scope = sp.CreateScope())
                 {
                     var scopedServices = scope.ServiceProvider;
                     var db = scopedServices.GetRequiredService<ApplicationDbContext>();
 
-                    // Ensure the database is created
-                    // db.Database.EnsureCreated();
+                    db.Database.EnsureCreated();
                 }
             });
         }
+    }
 
-        public class IgnoreAntiforgeryTokenAttribute : Attribute, IAntiforgeryPolicy
+    public class AllowAllAntiforgery : IAntiforgery
+    {
+        public AntiforgeryTokenSet GetAndStoreTokens(HttpContext httpContext)
         {
-            public Task ValidateRequestAsync(HttpContext context) { return Task.CompletedTask; }
+            return new AntiforgeryTokenSet("dummy-form-token", "dummy-cookie-token", "form-field", "header-name");
+        }
+
+        public AntiforgeryTokenSet GetTokens(HttpContext httpContext)
+        {
+            return new AntiforgeryTokenSet("dummy-form-token", "dummy-cookie-token", "form-field", "header-name");
+        }
+
+        public Task<bool> IsRequestValidAsync(HttpContext httpContext)
+        {
+            return Task.FromResult(true);
+        }
+
+        public void SetCookieTokenAndHeader(HttpContext httpContext)
+        {
+        }
+
+        public Task ValidateRequestAsync(HttpContext httpContext)
+        {
+            return Task.CompletedTask;
         }
     }
 }
