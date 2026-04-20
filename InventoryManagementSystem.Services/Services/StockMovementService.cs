@@ -62,13 +62,21 @@ namespace InventoryManagementSystem.Services.Services
             if (createDto.MovementDate > DateTime.Now)
                 throw new InvalidOperationException("Movement date cannot be in the future");
 
+            if (product.CurrentStock < createDto.Quantity)
+            {
+                throw new InvalidOperationException(
+                    $"Insufficient stock for product '{product.Name}'. " +
+                    $"Available: {product.CurrentStock}, Requested: {createDto.Quantity}"
+                    );
+            }
+
             var movement = new StockMovement
             {
                 ProductId = createDto.ProductId,
                 MovementType = MovementType.OUT,
                 Quantity = createDto.Quantity,
                 MovementDate = createDto.MovementDate,
-                Reference = createDto.Reason,
+                Reason = createDto.Reason,
                 Notes = createDto.Notes
             };
 

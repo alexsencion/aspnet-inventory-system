@@ -25,6 +25,9 @@ namespace InventoryManagementSystem.Services.Services
 
         public async Task<ProductDto> CreateProductAsync(CreateProductDto createDto)
         {
+            if (!await _productRepository.IsSkuUniqueAsync(createDto.SKU))
+                throw new InvalidOperationException($"SKU '{createDto.SKU}' already exists");
+
             var product = new Product
             {
                 Name = createDto.Name,
