@@ -29,6 +29,28 @@ builder.Services.AddScoped<IStockMovementService, StockMovementService>();
 
 var app = builder.Build();
 
+if (app.Environment.IsProduction())
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            var context = services.GetRequiredService<ApplicationDbContext>();
+
+            if (builder.Configuration.GetValue<bool>("AutoMigrateDatabase", false))
+            {
+                context.Database.Migrate();
+            }
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occured while migrating the database.");
+        }
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
